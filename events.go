@@ -11,7 +11,7 @@ import (
 func guildedReady(session *guildrone.Session, event *guildrone.Ready) {
 	Log.Trace("--- guildedReady(", event, ") ---")
 	for Guilded == nil {
-		//Wait for Discord to finish connecting on our end
+		//Wait for Guilded to finish connecting on our end
 		if Guilded != nil {
 			break
 		}

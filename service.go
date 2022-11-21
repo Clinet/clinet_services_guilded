@@ -3,19 +3,23 @@ package guilded
 import (
 	"fmt"
 
+	"github.com/Clinet/clinet_features"
 	"github.com/Clinet/clinet_services"
 	"github.com/Clinet/clinet_storage"
 	"github.com/JoshuaDoes/guildrone"
 	"github.com/JoshuaDoes/logger"
 )
 
-var Log *logger.Logger
+var Feature = features.Feature{
+	Name: "guilded",
+	ServiceChat: &ClientGuilded{},
+}
+var Guilded *ClientGuilded
 
+var Log *logger.Logger
 func init() {
 	Log = logger.NewLogger("guilded", 2)
 }
-
-var Guilded *ClientGuilded
 
 //ClientGuilded implements services.Service and holds a Guilded session
 type ClientGuilded struct {
@@ -40,15 +44,15 @@ func (guilded *ClientGuilded) Login() (err error) {
 	if err := cfg.LoadFrom("guilded"); err != nil {
 		return err
 	}
-	token, err := cfg.ExtraGet("cfg", "token")
+	token, err := cfg.ConfigGet("cfg", "token")
 	if err != nil {
 		return err
 	}
-	cmdPrefix, err := cfg.ExtraGet("cfg", "cmdPrefix")
+	cmdPrefix, err := cfg.ConfigGet("cfg", "cmdPrefix")
 	if err != nil {
 		return err
 	}
-	botName, err := cfg.ExtraGet("cfg", "botName")
+	botName, err := cfg.ConfigGet("cfg", "botName")
 	if err != nil {
 		return err
 	}
@@ -71,6 +75,7 @@ func (guilded *ClientGuilded) Login() (err error) {
 
 	Log.Info("Connected to Guilded!")
 	Guilded = &ClientGuilded{guildedClient, cmdPrefix.(string), botName.(string), guildrone.BotUser{}, cfg}
+	guilded = Guilded
 
 	return nil
 }
