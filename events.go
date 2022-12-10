@@ -40,6 +40,9 @@ func guildedChatMessageCreated(session *guildrone.Session, event *guildrone.Chat
 	prefix := "@" + Guilded.botName
 	if strings.Contains(msg.Content, prefix) {
 		convo = true
+		msg.Content = strings.ReplaceAll(msg.Content, " " + prefix + " ", " ")
+		msg.Content = strings.ReplaceAll(msg.Content, " " + prefix, "")
+		msg.Content = strings.ReplaceAll(msg.Content, prefix + " ", "")
 		msg.Content = strings.ReplaceAll(msg.Content, prefix, "")
 	}
 
@@ -50,7 +53,7 @@ func guildedChatMessageCreated(session *guildrone.Session, event *guildrone.Chat
 			Log.Error(err)
 			msgErr := msg
 			msgErr.Content = err.Error()
-			Guilded.MsgSend(msgErr)
+			Guilded.MsgSend(msgErr, nil)
 			return
 		}
 		cmdResps = resps
@@ -60,7 +63,7 @@ func guildedChatMessageCreated(session *guildrone.Session, event *guildrone.Chat
 			Log.Error(err)
 			msgErr := msg
 			msgErr.Content = err.Error()
-			Guilded.MsgSend(msgErr)
+			Guilded.MsgSend(msgErr, nil)
 			return
 		}
 		cmdResps = resps
@@ -82,7 +85,7 @@ func guildedChatMessageCreated(session *guildrone.Session, event *guildrone.Chat
 			r.ServerID = event.ServerID
 			r.ChannelID = event.Message.ChannelID
 
-			msg, err := Guilded.MsgSend(r.Message)
+			msg, err := Guilded.MsgSend(r.Message, nil)
 			if err != nil {
 				Log.Error(err)
 				return

@@ -28,6 +28,7 @@ type ClientGuilded struct {
 	botName   string
 	User      guildrone.BotUser
 	Cfg       *storage.Storage
+	Storage   *storage.Storage
 }
 
 func (guilded *ClientGuilded) Shutdown() {
@@ -57,6 +58,11 @@ func (guilded *ClientGuilded) Login() (err error) {
 		return err
 	}
 
+	state := &storage.Storage{}
+	if err := state.LoadFrom("guildedstate"); err != nil {
+		return err
+	}
+
 	Log.Debug("Creating Guilded struct...")
 	guildedClient, err := guildrone.New(token.(string))
 	if err != nil {
@@ -74,7 +80,7 @@ func (guilded *ClientGuilded) Login() (err error) {
 	}
 
 	Log.Info("Connected to Guilded!")
-	Guilded = &ClientGuilded{guildedClient, cmdPrefix.(string), botName.(string), guildrone.BotUser{}, cfg}
+	Guilded = &ClientGuilded{guildedClient, cmdPrefix.(string), botName.(string), guildrone.BotUser{}, cfg, state}
 	guilded = Guilded
 
 	return nil
@@ -86,7 +92,7 @@ func (guilded *ClientGuilded) MsgEdit(msg *services.Message) (ret *services.Mess
 func (guilded *ClientGuilded) MsgRemove(msg *services.Message) (err error) {
 	return nil
 }
-func (guilded *ClientGuilded) MsgSend(msg *services.Message) (ret *services.Message, err error) {
+func (guilded *ClientGuilded) MsgSend(msg *services.Message, ref interface{}) (ret *services.Message, err error) {
 	if msg.ChannelID == "" {
 		return nil, services.Error("guilded: MsgSend(msg: %v): missing channel ID", msg)
 	}
@@ -97,13 +103,13 @@ func (guilded *ClientGuilded) MsgSend(msg *services.Message) (ret *services.Mess
 	}
 
 	var guildedMsg *guildrone.ChatMessage
-	if msg.Title != "" || msg.Color != nil || msg.Image != "" {
+	if msg.Title != "" || msg.Color > 0 || msg.Image != "" {
 		retEmbed := guildrone.ChatEmbed{Description: msg.Content}
 		if msg.Title != "" {
 			retEmbed.Title = msg.Title
 		}
-		if msg.Color != nil {
-			retEmbed.Color = *msg.Color
+		if msg.Color > 0 {
+			retEmbed.Color = msg.Color
 		}
 		if msg.Image != "" {
 			retEmbed.Image = &guildrone.ChatEmbedImage{
